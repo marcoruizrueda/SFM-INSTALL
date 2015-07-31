@@ -20,13 +20,16 @@ echo "${green}CHECK CUDA IS INSTALLED${standColor}"
 
 nvcc_version="$(nvcc --version | grep 'Cuda compilation tools')"
 nvcc_check="$(ls /usr/local/cuda/bin | grep 'nvcc')"
-if [ -z "${nvcc_check}" ]; then
+if [ -z "${nvcc_check}" ]; then	
 	if [ -z "${nvcc_version}" ]; then
-		echo "${red}CUDA NOT INSTALED${standColor}"
+		echo "${red}ERRO!! CUDA NOT INSTALED. Please install the NVIDIA DRIVER AND CUDA.${standColor}"
 		exit 0
 	fi
 fi
-echo "$nvcc_version"
+
+echo "NVCC VERSION $nvcc_version"
+echo "NVCC BIN PATH $nvcv_check"
+
 mkdir visualsfm
 cd visualsfm
 
@@ -110,24 +113,23 @@ echo "${green} INSTALL PMVS${standColor}"
 check_gsl="$(dpkg -l | grep libgsl)"
 echo "${check_gsl}"
 if [ -z "${check_gsl}" ]; then
-        sudo apt-get install sudo libgsl*
+        sudo apt-get install libgsl*
 fi
 
 ## CHECK BLAS
 check_blas="$(dpkg -l | grep libblas)"
 echo "${check_blas}"
 if [ -z "${check_blas}" ]; then
-        sudo apt-get install sudo libblas*
+        sudo apt-get install libblas*
 fi
 
 ## CHECK LAPACK
 check_lapack="$(dpkg -l | grep liblapack)"
 echo "${check_lapack}"
 if [ -z "${check_lapack}" ]; then
-        sudo apt-get install sudo liblapack*
+        sudo apt-get install liblapack*
 fi
 cd ..
-
 if [ ! -d "pmvs-2" ]; then
 
 	wget --tries=5 http://www.di.ens.fr/pmvs/pmvs-2.tar.gz
