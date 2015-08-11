@@ -28,7 +28,7 @@ if [ -z "${nvcc_check}" ]; then
 fi
 
 echo "NVCC VERSION $nvcc_version"
-echo "NVCC BIN PATH $nvcv_check"
+echo "NVCC BIN PATH $nvcc_check"
 
 mkdir visualsfm
 cd visualsfm

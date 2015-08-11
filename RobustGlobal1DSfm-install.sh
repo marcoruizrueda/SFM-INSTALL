@@ -10,6 +10,16 @@ mainFolder="robustglobal1dsfm"
 mkdir $mainFolder
 cd  $mainFolder
 
+echo "${green}CHECK checking MATLAB installation ${standColor}"
+check_matlab="$(matlab -h)"
+if [ -z "${check_matlab}" ]; then  
+        echo "${red}Matlab was not found. Please, install MATLAB version 2013 or later ${standColor}"
+	echo "${red}Follow the instruction describedin https://help.ubuntu.com/community/MATLAB${standColor}"
+	exit -1;
+else
+	echo "${green}	MATLAB is already installed ${standColor}"
+fi
+
 echo "${green}CHECK checking GNU C++ installation ${standColor}"
 check_gcc="$(dpkg -s gcc)"
 echo $check_gcc
@@ -29,6 +39,13 @@ check_cython="$(dpkg -l | grep cython)"
 echo $check_cython
 if [ -z "${check_cython}" ]; then
         sudo apt-get install cython
+fi
+
+echo "${green}CHECK checking SCIPY  installation ${standColor}"
+check_scipy="$(dpkg -l | grep scipy)"
+echo $check_scipy
+if [ -z "${check_scipy}" ]; then
+	sudo apt-get install python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose
 fi
 
 echo "${green}CHECK checking CMAKE installation ${standColor}"
