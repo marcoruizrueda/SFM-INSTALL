@@ -20,11 +20,14 @@ echo "${green}CHECK CUDA IS INSTALLED${standColor}"
 
 nvcc_version="$(nvcc --version | grep 'Cuda compilation tools')"
 nvcc_check="$(ls /usr/local/cuda/bin | grep 'nvcc')"
-if [ -z "${nvcc_check}" ]; then	
-	if [ -z "${nvcc_version}" ]; then
-		echo "${red}ERRO!! CUDA NOT INSTALED. Please install the NVIDIA DRIVER AND CUDA.${standColor}"
-		exit 0
-	fi
+if [ -z "${nvcc_check}" ]; then
+	echo "${red}ERRO!! CUDA NOT INSTALED. Please install the NVIDIA DRIVER AND CUDA.${standColor}"
+	exit 0
+fi
+
+if [ -z "${nvcc_version}" ]; then
+	echo "${red}ERRO!! CUDA NOT INSTALED. Please install the NVIDIA DRIVER AND CUDA.${standColor}"
+	exit 0
 fi
 
 echo "NVCC VERSION $nvcc_version"
@@ -39,7 +42,7 @@ check_libgtk="$(dpkg-query -l libgtk2.0-dev | grep libgtk2.0-dev)"
 echo "$check_libgtk"
 
 if [ -z "${check_libgtk}" ]; then
-	sudo apt-get install libgtk2.0-dev 
+	sudo apt-get install libgtk2.0-dev
 fi
 
 echo "${green}INSTALL VISUAL SFM${standColor} "
@@ -74,27 +77,37 @@ if [ -z "${check_devil}" ]; then
 fi
 
 ## DOWNLOAD SFITGPU
-wget --tries=5 http://wwwx.cs.unc.edu/~ccwu/cgi-bin/siftgpu.cgi
-mv siftgpu.cgi siftgpu.zip
-unzip siftgpu.zip
-rm siftgpu.zip
+# wget --tries=5 http://wwwx.cs.unc.edu/~ccwu/cgi-bin/siftgpu.cgi
+# mv siftgpu.cgi siftgpu.zip
+# unzip siftgpu.zip
+# rm siftgpu.zip
+git clone https://github.com/pitzer/SiftGPU.git
 
 ## MAKE SIFT GPU
-cd SiftGPU
+cd SiftGPU/src/SiftGPU
+
+sed -i '3s/.*/find_package(GLEW)/' CMakeLists.txt
+sed -i '44s/.*/ADD_LIBRARY(siftgpu SHARED FrameBufferObject.cpp GlobalUtil.cpp GLTexImage.cpp ProgramGLSL.cpp/' CMakeLists.txt
+
+cd ../../
+mkdir build
+cd build
+cmake ..
 make
+
 #echo "TEST 1 -> $check_sift_make"
-cd ..
+cd ../../
 
 ## make a symbolic link
 cd bin
-ln -s ../SiftGPU/bin/libsiftgpu.so libsiftgpu.so
+ln -s ../SiftGPU/build/src/SiftGPU/libsiftgpu.so libsiftgpu.so
 cd ..
-
+#
 ## Install Multicore Bundle Adjustment
 echo "${green} INSTALL  Multicore Bundle Adjustment ${standColor}"
 
 wget --tries=5 http://grail.cs.washington.edu/projects/mcba/pba_v1.0.5.zip
-unzip pba_v1.0.5.zip 
+unzip pba_v1.0.5.zip
 rm pba_v1.0.5.zip
 
 cd pba
@@ -185,24 +198,29 @@ echo "libdl.so.2 -> $var_libdl"
 
 var_ld_linux_x86_64="$(locate ld-linux-x86-64.so. | grep 64 | sed -n '1 p')"
 echo "ld-linux-x86-64.so.2 -> $var_ld_linux_x86_64"
-#ln -s "$var_ld_linux_x86_64" "ld-linux-x86-64.so.2"
+ln -s "$var_ld_linux_x86_64" "ld-linux-x86-64.so.2"
 
 var_libgfortran="$(locate libgfortran.so. | grep 64 | sed -n '1 p')"
 echo "libgfortran.so.1 -> $var_libgfortran"
 ln -s "$var_libgfortran" "libgfortran.so.1"
 
+rm
+var_libgsl="$(locate libgsl.so | grep 64 | sed -n '1 p')"
+echo "libgsl.so.0 -> $var_libgsl"
+ln -s "$var_libgsl" "libgsl.so.0"
+
 sed -i '12s/.*/YOURINCLUDEPATH = -I\/usr\/include/' Makefile
-##sed -i '15s/.*/YOURLDLIBPATH =' Makefile
+#sed -i '15s/.*/YOURLDLIBPATH =' Makefile
 
 mv liblapack.so.3 liblapack.so.3_old
 
 make depend
 make
 cd ..
-
+#
 ## make symbolic link
 cd ../../vsfm/bin
-ln -s ../../pmvs-2/program/main/pmvs2 pmvs2
+# ln -s ../../pmvs-2/program/main/pmvs2 pmvs2
 cd ..
 
 echo "${green} INSTALL CMVS${standColor}"
@@ -226,6 +244,8 @@ fi
 cd graclus1.2
 sed -i '11s/.*/COPTIONS = -DNUMBITS=64/' Makefile.in
 make
+
+
 
 cd ../program/base/numeric
 
@@ -273,16 +293,21 @@ if ! [ "$check_f2c" ] ; then
         sudo apt-get install f2c
 fi
 
+check_gsl="$(dpkg -l | grep libgsl-dev)"
+if ! [ "$check_f2c" ] ; then
+        sudo apt install libgsl-dev
+fi
+
 #echo "PATH ACTUAL $(pwd)"
 ln -s ../../../pmvs-2/program/main/mylapack.o mylapack.o
+
+make depend
 make
 
 cd ../../../vsfm/bin
 
 ln -s ../../cmvs/program/main/cmvs cmvs
+ln -s ../../cmvs/program/main/pmvs2 pmvs2
 ln -s ../../cmvs/program/main/genOption genOption
 
 ## end of process
-
-
-
