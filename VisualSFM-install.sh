@@ -76,6 +76,13 @@ if [ -z "${check_devil}" ]; then
 	sudo apt-get install sudo libdevil-dev
 fi
 
+## CHECK GLEW
+check_glew="$(dpkg -l | grep libglew-dev)"
+echo "${check_glew}"
+if [ -z "${check_glew}" ]; then
+	sudo apt install sudo libglew-dev
+fi
+
 ## DOWNLOAD SFITGPU
 # wget --tries=5 http://wwwx.cs.unc.edu/~ccwu/cgi-bin/siftgpu.cgi
 # mv siftgpu.cgi siftgpu.zip
